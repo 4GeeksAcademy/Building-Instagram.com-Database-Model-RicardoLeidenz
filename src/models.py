@@ -1,5 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import String, Boolean, Integer, DateTime, Column, ForeignKey
+from sqlalchemy import String, Boolean, Integer, Column, ForeignKey
 from sqlalchemy.orm import relationship
 
 db = SQLAlchemy()
@@ -24,7 +24,7 @@ class User(db.Model):
 
 class Post(db.Model):
     id = Column(Integer, primary_key=True)
-    image_url = Column(String(50), nullable=False)
+    image_url = Column(String(150), nullable=False)
     description = Column(String(120))
     user_id = Column(Integer, ForeignKey('user.id'), nullable=False)
 

@@ -43,6 +43,7 @@ def sitemap():
 
 ### USERS OPERATIONS ####
 
+
 @app.route('/user', methods=['GET'])
 def handle_get_users():
     all_users = User.query.all()
@@ -54,6 +55,7 @@ def handle_get_users():
 
 ### POSTS OPERATIONS ####
 
+
 @app.route('/post', methods=['GET', 'POST'])
 def handle_posts():
     if request.method == 'POST':
@@ -61,10 +63,11 @@ def handle_posts():
         new_post = request.get_json()
         # Check if all information was provided
         if all(key in new_post for key in keys_to_check):
-            new_post = Post(image_url=new_post["image_url"], description=new_post["description"], user_id=new_post["user_id"])
+            new_post = Post(
+                image_url=new_post["image_url"], description=new_post["description"], user_id=new_post["user_id"])
             db.session.add(new_post)
             db.session.commit()
-            return "New event added: " + new_post
+            return {"New post added":new_post.serialize()}
     else:
         all_posts = Post.query.all()
         response_body = {
@@ -74,23 +77,26 @@ def handle_posts():
 
 ### EVENTS OPERATIONS ####
 
+
 @app.route('/event', methods=['GET', 'POST'])
 def handle_events():
     if request.method == 'POST':
-        keys_to_check = ["what", "where", "who"]
+        keys_to_check = ["what", "where", "user_id"]
         new_event = request.get_json()
         # Check if all information was provided
         if all(key in new_event for key in keys_to_check):
-            new_event = Event(what=new_event["what"], where=new_event["where"], who=new_event["who"])
+            new_event = Event(
+                what=new_event["what"], where=new_event["where"], user_id=new_event["user_id"])
             db.session.add(new_event)
             db.session.commit()
-            return "New event added: " + new_event
+            return {"New event added": new_event.serialize()}
     else:
         all_events = Event.query.all()
         response_body = {
             "data": [x.serialize() for x in all_events]
         }
         return jsonify(response_body), 200
+
 
 @app.route('/event/<int:event_id>', methods=['DELETE'])
 def delete_event(event_id):
