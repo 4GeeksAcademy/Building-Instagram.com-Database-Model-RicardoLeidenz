@@ -8,7 +8,7 @@ from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, User, Event
+from models import db, User, Event, Post
 # from models import Person
 
 app = Flask(__name__)
@@ -41,6 +41,7 @@ def handle_invalid_usage(error):
 def sitemap():
     return generate_sitemap(app)
 
+### USERS OPERATIONS ####
 
 @app.route('/user', methods=['GET'])
 def handle_get_users():
@@ -51,6 +52,27 @@ def handle_get_users():
 
     return jsonify(response_body), 200
 
+### POSTS OPERATIONS ####
+
+@app.route('/post', methods=['GET', 'POST'])
+def handle_posts():
+    if request.method == 'POST':
+        keys_to_check = ["image_url", "description", "user_id"]
+        new_post = request.get_json()
+        # Check if all information was provided
+        if all(key in new_post for key in keys_to_check):
+            new_post = Post(image_url=new_post["image_url"], description=new_post["description"], user_id=new_post["user_id"])
+            db.session.add(new_post)
+            db.session.commit()
+            return "New event added: " + new_post
+    else:
+        all_posts = Post.query.all()
+        response_body = {
+            "data": [x.serialize() for x in all_posts]
+        }
+        return jsonify(response_body), 200
+
+### EVENTS OPERATIONS ####
 
 @app.route('/event', methods=['GET', 'POST'])
 def handle_events():
@@ -69,7 +91,6 @@ def handle_events():
             "data": [x.serialize() for x in all_events]
         }
         return jsonify(response_body), 200
-
 
 @app.route('/event/<int:event_id>', methods=['DELETE'])
 def delete_event(event_id):
