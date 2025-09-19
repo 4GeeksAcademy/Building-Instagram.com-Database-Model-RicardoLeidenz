@@ -24,8 +24,7 @@ class User(db.Model):
             'last_name': self.last_name,
             'email': self.email,
             'posts': self.posts,
-            'comments': self.comments,
-            'following': self.following
+            'comments': self.comments
 
         }
 
@@ -37,12 +36,14 @@ class Post(db.Model):
     user_id = Column(Integer, ForeignKey('user.id'))
     # Relationships
     comments = relationship('Comment', backref='posted_on')
+    content = relationship('Media', backref='posted_on')
 
     def serialize(self):
         return {
             'id': self.id,
             'user_id': self.user_id,
-            'comments': self.comments
+            'comments': self.comments,
+            'content': self.content
             # do not serialize the password, its a security breach
         }
 
@@ -58,7 +59,7 @@ class Comment(db.Model):
     def serialize(self):
         return {
             'id': self.id,
-            'user_id': self.user_id,
+            'comment_text': self.comment_text,
             'author_id': self.author_id,
             'post_id': self.post_id
         }
@@ -67,7 +68,6 @@ class Comment(db.Model):
 class Media(db.Model):
     # Attributes
     id = Column(Integer, primary_key=True)
-    type = Column(String(120), nullable=False)
     url = Column(String(120), nullable=False)
     # Foreign Keys
     post_id = Column(Integer, ForeignKey('post.id'))
@@ -75,7 +75,6 @@ class Media(db.Model):
     def serialize(self):
         return {
             'id': self.id,
-            'type': self.type,
             'url': self.url,
             'post_id': self.post_id
         }
