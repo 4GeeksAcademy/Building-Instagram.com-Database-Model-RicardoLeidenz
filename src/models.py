@@ -1,66 +1,81 @@
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import String, Boolean, Integer, Column, ForeignKey
+from sqlalchemy import String, Integer, Column, ForeignKey
 from sqlalchemy.orm import relationship
 
 db = SQLAlchemy()
 
-
 class User(db.Model):
-    id = Column(Integer, primary_key=True)
-    email = Column(String(120), unique=True, nullable=False)
-    password = Column(String(120), nullable=False)
-    is_active = Column(Boolean(), nullable=False)
-    profile = relationship('Profile', backref='profile_id', lazy=True)
-    posts = relationship('Post', backref='author', lazy=True)
-    events_organized = relationship('Event', backref='who', lazy=True)
+    # Atributes
+    id = Column(Integer, primary_key=True, nullable=False)
+    username = Column(String(32), unique=True, nullable=False)
+    first_name = Column(String(32), nullable=False)
+    last_name = Column(String(32), nullable=False)
+    email = Column(String(32), unique=True, nullable=False)
+    password = Column(String(32), nullable=False)
+    # Relationships
+    posts = relationship('Post', backref='author')
+    comments = relationship('Comment', backref='author')
 
     def serialize(self):
         return {
             'id': self.id,
+            'username': self.username,
+            'first_name': self.first_name,
+            'last_name': self.last_name,
             'email': self.email,
-            'is_active': self.is_active
-            # do not serialize the password, its a security breach
-        }
+            'posts': self.posts,
+            'comments': self.comments,
+            'following': self.following
 
-
-class Profile(db.Model):
-    user_id = Column(Integer, ForeignKey("user.id"),
-                     primary_key=True, unique=True, nullable=False)
-    best_post = Column(Integer, ForeignKey("post.id"), nullable=False)
-
-    def serialize(self):
-        return {
-            'user_id': self.user_id,
-            'best_post': self.best_post
         }
 
 
 class Post(db.Model):
+    # Attributes
     id = Column(Integer, primary_key=True)
-    image_url = Column(String(150), nullable=False)
-    description = Column(String(120))
-    user_id = Column(Integer, ForeignKey('user.id'), nullable=False)
+    # Foreign Keys
+    user_id = Column(Integer, ForeignKey('user.id'))
+    # Relationships
+    comments = relationship('Comment', backref='posted_on')
 
     def serialize(self):
         return {
             'id': self.id,
-            'image_url': self.image_url,
-            'description': self.description,
-            'user_id': self.user_id
+            'user_id': self.user_id,
+            'comments': self.comments
             # do not serialize the password, its a security breach
         }
 
 
-class Event(db.Model):
+class Comment(db.Model):
+    # Attributes
     id = Column(Integer, primary_key=True)
-    what = Column(String(15), nullable=False)
-    where = Column(String(30), nullable=False)
-    user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
+    comment_text = Column(String(120), nullable=False)
+    # Foreign Keys
+    author_id = Column(Integer, ForeignKey('user.id'))
+    post_id = Column(Integer, ForeignKey('post.id'))
 
     def serialize(self):
         return {
             'id': self.id,
-            'what': self.what,
-            'where': self.where,
-            'user_id': self.user_id
+            'user_id': self.user_id,
+            'author_id': self.author_id,
+            'post_id': self.post_id
+        }
+
+
+class Media(db.Model):
+    # Attributes
+    id = Column(Integer, primary_key=True)
+    type = Column(String(120), nullable=False)
+    url = Column(String(120), nullable=False)
+    # Foreign Keys
+    post_id = Column(Integer, ForeignKey('post.id'))
+
+    def serialize(self):
+        return {
+            'id': self.id,
+            'type': self.type,
+            'url': self.url,
+            'post_id': self.post_id
         }
