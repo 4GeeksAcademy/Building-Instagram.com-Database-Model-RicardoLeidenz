@@ -24,7 +24,8 @@ class User(db.Model):
 
 
 class Profile(db.Model):
-    user_id = Column(Integer, ForeignKey("user.id"), primary_key=True, nullable=False)
+    user_id = Column(Integer, ForeignKey("user.id"),
+                     primary_key=True, unique=True, nullable=False)
     best_post = Column(Integer, ForeignKey("post.id"), nullable=False)
 
     def serialize(self):
