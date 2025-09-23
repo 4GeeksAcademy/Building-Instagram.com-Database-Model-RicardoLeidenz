@@ -4,6 +4,7 @@ from sqlalchemy.orm import relationship
 
 db = SQLAlchemy()
 
+
 class User(db.Model):
     # Atributes
     id = Column(Integer, primary_key=True, nullable=False)
