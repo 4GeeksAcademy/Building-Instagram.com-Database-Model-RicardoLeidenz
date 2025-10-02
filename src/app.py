@@ -48,19 +48,54 @@ def handle_users():
     if request.method == 'POST':
         keys_to_check = ["username", "first_name", "last_name", "email"]
         new_user = request.get_json()
-        # Check if all information was provided
-        if all(key in new_user for key in keys_to_check):
-            new_user = User(
-                username=new_user["username"], first_name=new_user["first_name"], last_name=new_user["last_name"], email=new_user["email"])
-            db.session.add(new_user)
-            db.session.commit()
-            return {"New User added": new_user.serialize()}, 200
+        # Trigger error if information is missing
+        if not all(key in new_user for key in keys_to_check):
+            return {"Error: Missing Information"}, 400
+        # Continue if not
+        new_user = User(
+            username=new_user["username"], first_name=new_user["first_name"], last_name=new_user["last_name"], email=new_user["email"])
+        db.session.add(new_user)
+        db.session.commit()
+        return {"New User added": new_user.serialize()}, 200
+
     else:
         all_users = User.query.all()
         response_body = {
             "data": [x.serialize() for x in all_users]
         }
         return jsonify(response_body), 200
+
+### POST OPERATIONS ####
+
+
+@app.route('/post', methods=['GET', 'POST'])
+def handle_posts():
+    if request.method == 'POST':
+        keys_to_check = ["author", "media"]
+        new_post = request.get_json()
+        # Trigger error if information is missing
+        if not all(key in new_post for key in keys_to_check):
+            return {"Error: Missing Information"}, 404
+        # Continue if not
+        posted_by = User.query.get(new_post["author"])
+        if not posted_by:
+            return {"Error: User does not exist"}, 404
+        final_post = Post(author_id=posted_by.id)
+        db.session.add(final_post)
+        post_media = Media(url=new_post["media"])
+        db.session.add(post_media)
+        db.session.flush()
+        # CREEEEO QUE POR AQUI ESTA EL PEO
+        post_media.post_id = final_post.id
+        db.session.commit()
+        return {"New Post added": final_post.serialize()}, 200
+    else:
+        all_posts = Post.query.all()
+        response_body = {
+            "data": [x.serialize() for x in all_posts]
+        }
+        return jsonify(response_body), 200
+
 
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':

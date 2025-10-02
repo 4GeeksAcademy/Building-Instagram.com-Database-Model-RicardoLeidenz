@@ -34,7 +34,7 @@ class Post(db.Model):
     # Attributes
     id = Column(Integer, primary_key=True)
     # Foreign Keys
-    user_id = Column(Integer, ForeignKey('user.id'))
+    author_id = Column(Integer, ForeignKey('user.id'))
     # Relationships
     comments = relationship('Comment', backref='posted_on')
     content = relationship('Media', backref='posted_on')
@@ -42,10 +42,9 @@ class Post(db.Model):
     def serialize(self):
         return {
             'id': self.id,
-            'user_id': self.user_id,
+            'author_id': self.author_id,
             'comments': self.comments,
             'content': self.content
-            # do not serialize the password, its a security breach
         }
 
 
