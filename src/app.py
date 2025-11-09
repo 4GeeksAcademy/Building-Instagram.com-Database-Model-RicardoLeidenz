@@ -85,7 +85,6 @@ def handle_posts():
         post_media = Media(url=new_post["media"])
         db.session.add(post_media)
         db.session.flush()
-        # CREEEEO QUE POR AQUI ESTA EL PEO
         post_media.post_id = final_post.id
         db.session.commit()
         return {"New Post added": final_post.serialize()}, 200
@@ -95,6 +94,19 @@ def handle_posts():
             "data": [x.serialize() for x in all_posts]
         }
         return jsonify(response_body), 200
+
+
+@app.route('/post', methods=['DELETE'])
+def delete_posts():
+    post_info = request.get_json()
+    if "id" in post_info:
+        post_deleted = Post.query.get(post_info["id"])
+        if post_deleted:
+            db.session.delete(post_deleted)
+            db.session.commit()
+            return {"Post deleted": post_deleted.serialize()}, 200
+        else:
+            return {"ERROR": "Post not found"}, 404
 
 
 # this only runs if `$ python src/app.py` is executed

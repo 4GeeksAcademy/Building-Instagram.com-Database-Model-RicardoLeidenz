@@ -24,8 +24,8 @@ class User(db.Model):
             'first_name': self.first_name,
             'last_name': self.last_name,
             'email': self.email,
-            'posts': self.posts,
-            'comments': self.comments
+            'posts': [p.id for p in self.posts],
+            'comments': [c.id for c in self.comments]
 
         }
 
@@ -36,15 +36,16 @@ class Post(db.Model):
     # Foreign Keys
     author_id = Column(Integer, ForeignKey('user.id'))
     # Relationships
-    comments = relationship('Comment', backref='posted_on')
-    content = relationship('Media', backref='posted_on')
+    comments = relationship('Comment', backref='posted_on',
+                            cascade='all, delete-orphan')
+    content = relationship('Media', backref='posted_on',
+                           cascade='all, delete-orphan')
 
     def serialize(self):
         return {
             'id': self.id,
             'author_id': self.author_id,
-            'comments': self.comments,
-            'content': self.content
+            'comments': [c.id for c in self.comments]
         }
 
 
